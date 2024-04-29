@@ -23,7 +23,7 @@
                                 <div class="col-lg">
                                     <div class="form-group">
                                         <label class="form-control-label">Console Log for {{ $job_name }} ({{ $build_number}})</label>
-                                        <textarea class="form-control" id="" rows="19" disabled readonly>{{ $consoleText }}</textarea>
+                                        <textarea class="form-control" id="" rows="30" disabled readonly>{{ $consoleText }}</textarea>
                                     </div>
                                 </div>
                             </div>

@@ -40,7 +40,7 @@
                                     <div class="col-lg">
                                         <div class="input-group input-group-static mb-4">
                                             <label class="form-control-label">Jenkins URL</label>
-                                            <textarea class="form-control" name="jenkins_url" id="" rows="2"></textarea>
+                                            <input type="text" class="form-control" name="jenkins_url" id="">
                                         </div>
                                     </div>
                                 </div>

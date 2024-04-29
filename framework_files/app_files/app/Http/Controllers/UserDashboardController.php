@@ -27,7 +27,25 @@ class UserDashboardController extends Controller
     }
 
     public function mydashboard(){
-        return view('dashboard-usr.dashboard');
+        $jobJenkins = Jenkins::count();
+        $jobDocker = Docker::count();
+        $jobServer = Server::count();
+        $jobJobs = Jobs::count();
+        $jobProject = Project::count();
+        $jobTemplate = Template::count();
+        $jobCount = MasterJobs::count();
+
+        $newestJobs = Jobs::latest()->take(5)->get();
+        $newestProject = Project::latest()->take(5)->get();
+         
+        $data = compact('jobJenkins', 'jobDocker', 'jobServer', 'jobJobs', 'jobProject', 'jobTemplate', 'jobCount');
+
+         // Pass both $data and $newestJobs to the view
+        return view('dashboard-usr.dashboard', [
+            'data' => $data,
+            'newestJobs' => $newestJobs,
+            'newestProject' => $newestProject,
+        ]);
     }
 
     public function get_build_jobs($jobs_id, $project_id, $build_id)
@@ -179,6 +197,8 @@ class UserDashboardController extends Controller
         $project_name = $project->project_name;
         $project_repo = $project->template->template_repo;
         $repo_pull = $project->project_repo;
+
+        $sonarqube = $project->sonarqube_token;
     
         $server_ip = $project->server->server_ip;  
         $username = $project->server->username; 
@@ -190,25 +210,28 @@ class UserDashboardController extends Controller
         $jenkins_user_url = $project->jenkins->jenkins_url;
 
         if ($jobs_id == 1){
-           // add later
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 2){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 3){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 3){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 4){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 5){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 6){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
-        } elseif($jobs_id == 7){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}&project_type={$project_type}&project_repo={$project_repo}";
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 8){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 9){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&sonarqube={$sonarqube}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 10){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
+        } elseif($jobs_id == 11){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-        }
-        else {
+        } elseif($jobs_id == 7){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } else {
             return Redirect::to("/project/$project_id/show")->with(['error' => 'something error happend']);
         }
 
@@ -553,22 +576,14 @@ class UserDashboardController extends Controller
     public function jenkins_edit($id){
         $users = Auth::user()->id;
         $jenkins = jenkins::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('jenkins')
-        ->join('undangans', 'jenkins.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('jenkins.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.jenkinsedit', compact('jenkins', 'undangan', 'undangan_select'));
+        return view('dashboard-usr.jenkinsedit', compact('jenkins'));
     }
 
     public function jenkins_update(Request $request, $id, jenkins $jenkins){
-
+        $jenkins = Jenkins::find($id);
+        // return $jenkins;
         $data = $request->all();
-        $jenkins = jenkins::find($id);
         $jenkins->fill($data)->save();
-
         return Redirect::to('/jenkins')->with(['success' => 'Berhasil mengedit jenkins']);
     }
 
@@ -607,14 +622,7 @@ class UserDashboardController extends Controller
     public function docker_edit($id){
         $users = Auth::user()->id;
         $docker = docker::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('docker')
-        ->join('undangans', 'docker.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('docker.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.dockeredit', compact('docker', 'undangan', 'undangan_select'));
+        return view('dashboard-usr.dockeredit', compact('docker'));
     }
 
     public function docker_update(Request $request, $id, docker $docker){
@@ -658,14 +666,7 @@ class UserDashboardController extends Controller
     public function server_edit($id){
         $users = Auth::user()->id;
         $server = server::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('server')
-        ->join('undangans', 'server.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('server.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.serveredit', compact('server', 'undangan', 'undangan_select'));
+        return view('dashboard-usr.serveredit', compact('server'));
     }
 
     public function server_update(Request $request, $id, server $server){
@@ -710,14 +711,7 @@ class UserDashboardController extends Controller
     public function template_edit($id){
         $users = Auth::user()->id;
         $template = template::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('template')
-        ->join('undangans', 'template.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('template.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.templateedit', compact('template', 'undangan', 'undangan_select'));
+        return view('dashboard-usr.templateedit', compact('template'));
     }
 
     public function template_update(Request $request, $id, template $template){
@@ -761,14 +755,7 @@ class UserDashboardController extends Controller
     public function masterjobs_edit($id){
         $users = Auth::user()->id;
         $masterjobs = masterjobs::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('masterjobs')
-        ->join('undangans', 'masterjobs.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('masterjobs.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.masterjobsedit', compact('masterjobs', 'undangan', 'undangan_select'));
+        return view('dashboard-usr.masterjobsedit', compact('masterjobs'));
     }
 
     public function masterjobs_update(Request $request, $id, masterjobs $masterjobs){
@@ -840,7 +827,7 @@ class UserDashboardController extends Controller
         } elseif ($type === 'repo') {
             $types = 2;
         }
-        $jenkins = jenkins::get();
+        $jenkins = Jenkins::get();
         $template = Template::get();
         $server = Server::get();
         $docker = Docker::get();
@@ -856,16 +843,15 @@ class UserDashboardController extends Controller
     }
 
     public function project_edit($id){
-        $users = Auth::user()->id;
+        $user = Auth::user()->id;
         $project = project::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('project')
-        ->join('undangans', 'project.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('project.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.projectedit', compact('project', 'undangan', 'undangan_select'));
+
+        $jenkins = Jenkins::get();
+        $template = Template::get();
+        $server = Server::get();
+        $docker = Docker::get();
+
+        return view('dashboard-usr.projectedit', compact('project', 'server','template','docker','user','jenkins'));
     }
 
     public function project_update(Request $request, $id, project $project){
@@ -914,14 +900,8 @@ class UserDashboardController extends Controller
     public function jobs_edit($id){
         $users = Auth::user()->id;
         $jobs = jobs::find($id);
-        $undangan = Undangan::where('id_user', '=', $users)->get();
-        $undangan_select = DB::table('jobs')
-        ->join('undangans', 'jobs.id_undangan', '=', 'undangans.id')
-        ->select('undangans.id', 'undangans.title')
-        ->where('jobs.id', '=', $id)->first();
-        // $undangan_select = Undangan::where('id_undangan', $id)->first();
-        // $users;
-        return view('dashboard-usr.jobsedit', compact('jobs', 'undangan', 'undangan_select'));
+
+        return view('dashboard-usr.jobsedit', compact('jobs'));
     }
 
     public function jobs_update(Request $request, $id, jobs $jobs){

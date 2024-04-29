@@ -72,7 +72,7 @@
                                     <div class="col-lg-4 mt-3">
                                         <div class="input-group input-group-static mb-4">
                                             <label class="form-control-label">Orign Pull Repo</label>
-                                            <input type="text" name="project_repo" id="" class="form-control" value="keep none if didnt have orign repo or change it">
+                                            <input type="text" name="project_repo" id="" class="form-control" value=" ">
                                         </div>
                                     </div>
                                     @endif

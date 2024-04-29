@@ -37,7 +37,6 @@
                                     </div>
                                 </div> 
                                 <div class="row">
-                                <div class="row">
                                     <div class="col-lg">
                                         <div class="input-group input-group-static mb-4">
                                             <label class="form-control-label">Description</label>

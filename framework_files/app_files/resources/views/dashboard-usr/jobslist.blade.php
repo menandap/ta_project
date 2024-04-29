@@ -42,10 +42,10 @@
                                             <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">No.</th>
                                             <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Jobs</th>
                                             <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Project Name</th>
-                                            <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Jenkins</th>
+                                            <!-- <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Jenkins</th> -->
                                             <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Build Number</th>
-                                            <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Build Time</th>
-                                            <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">DateTime</th>
+                                            <!-- <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Build Time</th>
+                                            <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">DateTime</th> -->
                                             <th class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Status</th>
                                             <th colspan="2" class="text-uppercase text-secondary text-lg font-weight-bolder ps-2">Action</th>
                                         </tr>
@@ -56,10 +56,10 @@
                                             <td><p class="text-md font-weight-normal mb-0">{{ $jobs->firstItem()+$loop->index }}</p></th>
                                             <td><p class="text-md font-weight-normal mb-0">{{ $jobss->masterjobs->jobs_name }}</p></td>
                                             <td><p class="text-md font-weight-normal mb-0">{{ $jobss->project->project_name }}</p></td>
-                                            <td><p class="text-md font-weight-normal mb-0">{{ $jobss->jenkins->username }}</p></td>
+                                            <!-- <td><p class="text-md font-weight-normal mb-0">{{ $jobss->jenkins->username }}</p></td> -->
                                             <td><p class="text-md font-weight-normal mb-0">{{ $jobss->build_number }}</p></td>
-                                            <td><p class="text-md font-weight-normal mb-0">{{ $jobss->build_time }} sec</p></td>
-                                            <td><p class="text-md font-weight-normal mb-0">{{ $jobss->created_at }}</p></td>
+                                            <!-- <td><p class="text-md font-weight-normal mb-0">{{ $jobss->build_time }} sec</p></td>
+                                            <td><p class="text-md font-weight-normal mb-0">{{ $jobss->created_at }}</p></td> -->
                                             <td>
                                                 <span class="badge badge-dot me-4">
                                                     @if($jobss->status=='success')

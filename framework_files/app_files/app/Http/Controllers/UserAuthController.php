@@ -30,85 +30,6 @@ class UserAuthController extends Controller
         return response()->json(['status' => $jobStatus]);
     }
 
-    // public function pipiline($project_id, $job_1, $job_2, $job_3) {
-    //     // Call get_latest_jobs method to retrieve build information
-    //     $latestBuildResponse = $this->get_latest_jobs(0, $project_id);
-    //     // Decode the JSON response to an associative array
-    //     $latestBuild = $latestBuildResponse->original;
-    //     // Access the 'BuildNumber' value from the returned JSON
-    //     $buildNumber = $latestBuild['BuildNumber'] ?? null;
-
-    //     $project = Project::with('server', 'template', 'docker', 'user','jenkins')
-    //     ->where('id', '=', $project_id)
-    //     ->first();
-
-    //     $jobs = MasterJobs::where('id', '=', 0)
-    //     ->first();
-
-    //     $job_name = $jobs->jobs_name;
-    //     $token = $jobs->jobs_token;
-        
-    //     $project_type = $project->template->template_type; 
-    //     $project_name = $project->project_name;
-    //     $project_repo = $project->template->template_repo;
-    //     $repo_pull = $project->project_repo;
-    
-    //     $server_ip = $project->server->server_ip;  
-    //     $username = $project->server->username; 
-    //     $password = $project->server->password;
-
-    //     $docker_username = $project->docker->username; 
-    //     $docker_password = $project->docker->password; 
-
-    //     $jenkins_user_url = $project->jenkins->jenkins_url;
-
-    //     if ($jobs_id == 1){
-    //        // add later
-    //     } elseif($jobs_id == 2){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
-    //     } elseif($jobs_id == 3){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&server_ip={$server_ip}&username={$username}&password={$password}";
-    //     } elseif($jobs_id == 4){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-    //     } elseif($jobs_id == 5){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-    //     } elseif($jobs_id == 6){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
-    //     } elseif($jobs_id == 7){
-    //         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}&project_type={$project_type}&project_repo={$project_repo}";
-    //     }else {
-    //         return Redirect::to("/project/$project_id/show")->with(['error' => 'something error happend']);
-    //     }
-
-    //     $jenkinsUsername = $project->jenkins->username;  
-    //     $jenkinsApiToken = $project->jenkins->token; 
-    //     $response = Http::withBasicAuth($jenkinsUsername, $jenkinsApiToken)->post($jenkins_url);
-
-    //     if ($response->status() == 201) {
-    //         $now = Carbon::now()->addHours(8);
-
-    //         $build_number = is_numeric($buildNumber) ? $buildNumber + 1 : 1;
-            
-    //         Jobs::create([
-    //             'id_jobs' => $jobs_id, 
-    //             'id_project' => $project->id,
-    //             'id_jenkins' => $project->jenkins->id,
-    //             'id_user' => 0,
-    //             'build_number' =>  $build_number,
-    //             'build_time' => 0, //need to edit more
-    //             'status' => 'process',
-    //             'created_at' => $now, 
-    //             'updated_at' => $now, 
-    //         ]);
-
-    //         return "Jenkins job triggered successfully";
-
-    //     } else {
-    //         return "Failed to trigger Jenkins job";
-    //     }
-        
-    // }
-
     public function get_build_jobs($jobs_id, $project_id, $build_id)
     {
         $project = Project::with('server', 'template', 'docker', 'user','jenkins')
@@ -246,20 +167,28 @@ class UserAuthController extends Controller
         $jenkins_user_url = $project->jenkins->jenkins_url;
 
         if ($jobs_id == 1){
-           // add later
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 2){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 3){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 3){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 4){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 5){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 6){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 7){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}&project_type={$project_type}&project_repo={$project_repo}";
-        }else {
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 8){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 9){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
+        }  elseif($jobs_id == 11){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        }  elseif($jobs_id == 10){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } else {
             return Redirect::to("/project/$project_id/show")->with(['error' => 'something error happend']);
         }
 

@@ -16,4 +16,9 @@ class MasterJobs extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function jobs()
+    {
+        return $this->hasMany(Jobs::class, 'id_jobs', 'id');
+    }
 }

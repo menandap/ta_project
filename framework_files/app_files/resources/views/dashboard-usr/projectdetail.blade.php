@@ -108,18 +108,37 @@
                                     @endforeach
                                 </div> -->
                                 <div class="row">
-                                    @foreach($masterjobs as $masterjob)
-                                        <div class="col-lg-4 mb-3">
-                                            <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
-                                                @csrf
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-success w-100">
-                                                        Trigger {{ $masterjob->jobs_name }}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    @endforeach
+                                @foreach($masterjobs as $masterjob)
+    @php
+        $latestJob = $masterjob->jobs()->where('id_project', $project->id)->latest()->first();
+    @endphp
+    <div class="col-lg-4 mb-3">
+        <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
+            @csrf
+            <div class="form-group">
+                @if($latestJob)
+                    @if($latestJob->status == 'SUCCESS')
+                        <button type="submit" class="btn btn-success w-100">
+                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                        </button>
+                    @elseif($latestJob->status == 'FAILURE')
+                        <button type="submit" class="btn btn-danger w-100">
+                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                        </button>
+                    @else
+                        <button type="submit" class="btn btn-warning w-100">
+                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                        </button>
+                    @endif
+                @else
+                    <button type="submit" class="btn btn-secondary w-100">
+                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                    </button>
+                @endif
+            </div>
+        </form>
+    </div>
+@endforeach
                                 </div>
                                 <div class="row pb-4 pt-5">
                                     <div class="col-6 align-items-center">

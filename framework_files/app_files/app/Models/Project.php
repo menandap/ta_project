@@ -19,7 +19,8 @@ class Project extends Model
         'created_at',
         'updated_at',
         'post_repo',
-        'id_user_jenkins'
+        'id_user_jenkins',
+        'sonarqube_token'
     ];
 
     public function user(){
