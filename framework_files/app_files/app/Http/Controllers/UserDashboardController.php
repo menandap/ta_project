@@ -18,6 +18,7 @@ use App\Models\Server;
 use App\Models\Template;
 use Auth;
 use Illuminate\Support\Facades\Artisan;
+use GuzzleHttp\Client;
 
 class UserDashboardController extends Controller
 {
@@ -96,83 +97,102 @@ class UserDashboardController extends Controller
 
     public function get_latest_jobs($jobs_id, $project_id)
     {
-        $project = Project::with('server', 'template', 'docker', 'user','jenkins')
+        $project = Project::with('server', 'template', 'docker', 'user', 'jenkins')
             ->where('id', '=', $project_id)
             ->first();
-
+    
         $jobs = MasterJobs::where('id', '=', $jobs_id)
             ->first();
-
+    
         $job_name = $jobs->jobs_name;
         $token = $jobs->jobs_token;
         $jenkins_user_url = $project->jenkins->jenkins_url;
-
+    
         $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/lastBuild/api/json";
-
-        $jenkinsUsername = $project->jenkins->username;  
-        $jenkinsApiToken = $project->jenkins->token; 
-
-        $response = Http::withBasicAuth($jenkinsUsername, $jenkinsApiToken)->get($jenkins_url);
-
-        if ($response->status() == 200) {
-            $buildInfo = $response->json();
-
-            // Extract relevant build information
-            $buildNumber = $buildInfo['number'];
-            $buildResult = $buildInfo['result'];
-            $buildTimestamp = $buildInfo['timestamp'] / 1000; // Convert milliseconds to seconds
-            $buildDuration = $buildInfo['duration'] / 1000; // Convert milliseconds to seconds
-
-            // Convert timestamp to a human-readable date
-            $timestampDate = Carbon::createFromTimestamp($buildTimestamp)->toDateTimeString();
-
-            // Create a response containing build information
-            $latestBuild = [
-                'BuildNumber' => $buildNumber,
-                'Result' => $buildResult,
-                'Timestamp' => $timestampDate,
-                'Duration' => $buildDuration
-                // Add more fields as needed
-            ];
-
-            return response()->json($latestBuild); // Return build information in JSON format
-        } else {
-            return response()->json(['error' => 'Failed to fetch build information']);
+    
+        $jenkinsUsername = $project->jenkins->username;
+        $jenkinsApiToken = $project->jenkins->token;
+    
+        $client = new Client([
+            'base_uri' => $jenkins_url,
+            'auth' => [$jenkinsUsername, $jenkinsApiToken]
+        ]);
+    
+        try {
+            $response = $client->request('GET', '', ['http_errors' => false]);
+    
+            if ($response->getStatusCode() == 200) {
+                $buildInfo = json_decode($response->getBody()->getContents(), true);
+    
+                // Extract relevant build information
+                $buildNumber = $buildInfo['number'];
+                $buildResult = $buildInfo['result'];
+                $buildTimestamp = $buildInfo['timestamp'] / 1000; // Convert milliseconds to seconds
+                $buildDuration = $buildInfo['duration'] / 1000; // Convert milliseconds to seconds
+    
+                // Convert timestamp to a human-readable date
+                $timestampDate = Carbon::createFromTimestamp($buildTimestamp)->toDateTimeString();
+    
+                // Create a response containing build information
+                $latestBuild = [
+                    'BuildNumber' => $buildNumber,
+                    'Result' => $buildResult,
+                    'Timestamp' => $timestampDate,
+                    'Duration' => $buildDuration
+                    // Add more fields as needed
+                ];
+    
+                return response()->json($latestBuild); // Return build information in JSON format
+            } else {
+                abort(503);
+            }
+        } catch (\Exception $e) {
+            // Handle connection errors
+            abort(503);
         }
     }
 
     public function get_build_console($jobs_id, $project_id)
     {
-        $project = Project::with('server', 'template', 'docker', 'user','jenkins')
-        ->where('id', '=', $project_id)
-        ->first();
-
+        $project = Project::with('server', 'template', 'docker', 'user', 'jenkins')
+            ->where('id', '=', $project_id)
+            ->first();
+    
         $jobs = Jobs::where('id', '=', $jobs_id)
             ->first();
-        
+    
         $master_jobs = MasterJobs::where('id', '=', $jobs->id_jobs)
             ->first();
-        
+    
         $job_name = $master_jobs->jobs_name;
-
+    
         $build_number = $jobs->build_number;
         $jenkins_user_url = $project->jenkins->jenkins_url;
-
+    
         $jenkins_url = "{$jenkins_user_url}/job/{$master_jobs->jobs_name}/{$build_number}/consoleText";
-
-        $jenkinsUsername = $project->jenkins->username;  
-        $jenkinsApiToken = $project->jenkins->token; 
-
-        $response = Http::withBasicAuth($jenkinsUsername, $jenkinsApiToken)->get($jenkins_url);
-
-        if ($response->status() == 200) {
-            $consoleText = $response->body();
-            return view('dashboard-usr.consolejobs', compact('consoleText','project_id','job_name','build_number'));
-        } else {
-            return response()->json(['error' => 'Failed to fetch console text'], 500);
+    
+        $jenkinsUsername = $project->jenkins->username;
+        $jenkinsApiToken = $project->jenkins->token;
+    
+        $client = new Client([
+            'base_uri' => $jenkins_url,
+            'auth' => [$jenkinsUsername, $jenkinsApiToken]
+        ]);
+    
+        try {
+            $response = $client->request('GET', '', ['http_errors' => false]);
+    
+            if ($response->getStatusCode() == 200) {
+                $consoleText = $response->getBody()->getContents();
+                return view('dashboard-usr.consolejobs', compact('consoleText', 'project_id', 'job_name', 'build_number'));
+            } else {
+                // If not found, return a 404 error or any other appropriate response
+                abort(503);
+            }
+        } catch (\Exception $e) {
+            // Handle any exceptions (e.g., connection errors)
+            abort(503);
         }
-
-        // return $jenkins_url;
     }
 
     public function jobs_jenkins($jobs_id, $project_id) {
@@ -207,29 +227,49 @@ class UserDashboardController extends Controller
         $docker_username = $project->docker->username; 
         $docker_password = $project->docker->password; 
 
+        $url = $project->jenkins->jenkins_url;
+        $parsed_url = parse_url($url);
+
+        // Get the hostname
+        $sonarserver = $parsed_url['host'];
+        $mainserver = $sonarserver;
+
+
         $jenkins_user_url = $project->jenkins->jenkins_url;
 
         if ($jobs_id == 1){
+            $callSonarProject = $this->createProjectSonar($project_id);
+            // // $callSonarProject = $callSonarProject->original;
+            // // return $callSonarProject;
+            $callSonarToken = $this->createTokenSonar($project_id);
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 2){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 3){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 4){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+            if ($repo_pull == NULL) {
+                return Redirect::to("/project/$project_id/show")->with(['error' => 'Failed to trigger Jenkins because the repo pull == NULL']);
+            } else {
+                $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&repo_pull={$repo_pull}&server_ip={$server_ip}&username={$username}&password={$password}";
+            }
         } elseif($jobs_id == 5){
+            // Save the API token to the database
+            $project = Project::find($project_id); // Fetch the project by ID
+            $project->post_repo = "https://github.com/menandap/$project_name";
+            $project->save();
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 6){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 8){
+        } elseif($jobs_id == 7){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 8){
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&mainserver={$mainserver}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 9){
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&sonarqube={$sonarqube}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&sonarqube={$sonarqube}&sonarserver={$sonarserver}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 10){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}&docker_username={$docker_username}&docker_password={$docker_password}";
         } elseif($jobs_id == 11){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 7){
+        } elseif($jobs_id == 4){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
         } else {
             return Redirect::to("/project/$project_id/show")->with(['error' => 'something error happend']);
@@ -259,52 +299,105 @@ class UserDashboardController extends Controller
 
             return Redirect::to("/project/$project_id/show")->with(['success' => 'Jenkins ' . $job_name . ' triggered successfully']);
 
-            // // Start an asynchronous task to retrieve Jenkins information
-            // dispatch(function () use ($jobs_id, $project_id, $build_number) {
-            //     $jobs = MasterJobs::where('id', '=', $jobs_id)
-            //     ->first();
-            //     $job_name = $jobs->jobs_name;
-
-            //     $maxAttempts = 12; // 12 attempts * 5 seconds = 60 seconds (1 minute)
-            //     $attempt = 1;
-            //     $buildJobs = null;
-
-            //     while ($attempt <= $maxAttempts) {
-            //         // Get job information
-            //         $buildJobs = $this->get_build_jobs($jobs_id, $project_id, $build_number);
-
-            //         if ($buildJobs !== null) {
-            //             // If job information is received, break the loop
-            //             break;
-            //         }
-
-            //         sleep(5); // Wait for 5 seconds before next attempt
-            //         $attempt++;
-            //     }
-
-            //     if ($buildJobs !== null) {
-            //         $buildResult = $buildJobs['Result'];
-            //         $duration = $buildJobs['Duration'];
-
-            //         // Update Jobs model based on retrieved information
-            //         Jobs::where('id', $jobs_id)->update([
-            //             'status' => $buildResult,
-            //             'build_time' => $duration,
-            //             // Update other fields as needed
-            //         ]);
-            //         return Redirect::to("/project/$project_id/show")->with(['success' => 'Jenkins ' . $job_name . ' triggered successfully']);
-
-            //     } else {
-            //         // Handle the case where job information couldn't be retrieved within 1 minute
-            //         return Redirect::to("/project/$project_id/show")->with(['error' => 'Failed to get more information on Jenkins (already 1 minute)' . $job_name]);
-            //     }
-            // })->afterResponse(); // Run this asynchronously after the response is sent
-
         } else {
             return Redirect::to("/project/$project_id/show")->with(['error' => 'Failed to trigger Jenkins ' . $job_name]);
         }
         
         // return $jenkins_url;
+    }
+
+    public function createProjectSonar($project_id) {
+        $project = Project::with('server', 'template', 'docker', 'user','jenkins')
+        ->where('id', '=', $project_id)
+        ->first();
+
+        $url = $project->jenkins->jenkins_url;
+        $parsed_url = parse_url($url);
+
+        // Get the hostname
+        $sonarserver = $parsed_url['host'];
+
+        $client = new Client([
+            'base_uri' => "http://$sonarserver:9000/api/",
+            'timeout'  => 2.0,
+        ]);
+
+        try {
+            $response = $client->post('projects/create', [
+                'auth' => ['squ_92dee574ce0cccce68bd081a1e2ebf7e95422c9a', ''],
+                'form_params' => [
+                    'name' => $project->project_name,
+                    'project' => $project->project_name,
+                    'visibility' => 'public',
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+
+            // Process the response or return it as needed
+            return response()->json([
+                'status' => 'success',
+                'statusCode' => $statusCode,
+                'body' => json_decode($body, true),
+            ]);
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function createTokenSonar($project_id){
+        $project = Project::with('server', 'template', 'docker', 'user','jenkins')
+        ->where('id', '=', $project_id)
+        ->first();
+
+        $url = $project->jenkins->jenkins_url;
+        $parsed_url = parse_url($url);
+
+        // Get the hostname
+        $sonarserver = $parsed_url['host'];
+
+        $client = new Client([
+            'base_uri' => "http://$sonarserver:9000/api/",
+            'timeout'  => 2.0,
+        ]);
+
+        try {
+            $response = $client->post('user_tokens/generate', [
+                'auth' => ['squ_92dee574ce0cccce68bd081a1e2ebf7e95422c9a', ''],
+                'form_params' => [
+                    'name' => $project->project_name,
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $body = $response->getBody()->getContents();
+
+            // Assuming $apiToken holds the API token obtained from SonarQube
+            $apiToken = json_decode($body, true)['token'];
+
+            // Save the API token to the database
+            $project = Project::find($project_id); // Fetch the project by ID
+            $project->sonarqube_token = $apiToken;
+            $project->save();
+
+            // Process the response or return it as needed
+            return response()->json([
+                'status' => 'success',
+                'statusCode' => $statusCode,
+                'body' => json_decode($body, true),
+            ]);
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // // MY BUILD PROCESS

@@ -2,13 +2,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserDashboardController;
+use Illuminate\Http\Request;
 
 // AUTH
 Route::view('/login', 'auth.login')->name('login');
 Route::post('/actLogin', [UserAuthController::class, 'actLogin'])->name('actLogin');
+
 Route::view('/register', 'auth.register')->name('register');
 Route::post('/actRegister', [UserAuthController::class, 'actRegister']);
+
 Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
+
+Route::get('/dp/{filename}', [UserAuthController::class, 'dp_check'])->name('dp_check')->withoutMiddleware('auth');
 
 Route::get('/project/{id}/status-check', [UserAuthController::class, 'checkStatus'])
     ->name('checkStatus')
@@ -24,6 +29,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/get_build_jobs/{jobs_id}/{project_id}/{build_id}',  [UserDashboardController::class, 'get_build_jobs']);
     Route::get('/get_build_console/{jobs_id}/{project_id}',  [UserDashboardController::class, 'get_build_console']);
     Route::post('/build/jobs_jenkins/{jobs_id}/{project_id}', [UserDashboardController::class, 'jobs_jenkins']);
+
+    Route::match(['GET', 'POST'], '/sonarqube_project/{project_id}', [UserDashboardController::class, 'createProjectSonar']);
+    Route::match(['GET', 'POST'], '/sonarqube_token/{project_id}', [UserDashboardController::class, 'createTokenSonar']);
 
     Route::post('/build/make_project_template/{id}', [UserDashboardController::class, 'make_project_template']);
     Route::post('/build/pull_project_template/{id}', [UserDashboardController::class, 'pull_project_template']);

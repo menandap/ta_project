@@ -90,7 +90,7 @@
                                 </div>
                                 <div class="row pb-4 pt-5">
                                     <div class="col-6 align-items-center">
-                                        <h2 class="mb-0">Trigerr Jenkins</h2>
+                                        <h2 class="mb-0">Trigerr Jenkins Stage Development</h2>
                                     </div>
                                 </div>
                                 <!-- <div class="row">
@@ -108,37 +108,119 @@
                                     @endforeach
                                 </div> -->
                                 <div class="row">
-                                @foreach($masterjobs as $masterjob)
-    @php
-        $latestJob = $masterjob->jobs()->where('id_project', $project->id)->latest()->first();
-    @endphp
-    <div class="col-lg-4 mb-3">
-        <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
-            @csrf
-            <div class="form-group">
-                @if($latestJob)
-                    @if($latestJob->status == 'SUCCESS')
-                        <button type="submit" class="btn btn-success w-100">
-                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
-                        </button>
-                    @elseif($latestJob->status == 'FAILURE')
-                        <button type="submit" class="btn btn-danger w-100">
-                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
-                        </button>
-                    @else
-                        <button type="submit" class="btn btn-warning w-100">
-                            ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
-                        </button>
-                    @endif
-                @else
-                    <button type="submit" class="btn btn-secondary w-100">
-                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
-                    </button>
-                @endif
-            </div>
-        </form>
-    </div>
-@endforeach
+                                @foreach($masterjobs as $key => $masterjob)
+                                @if($key < 5) 
+                                @php
+                                    $latestJob = $masterjob->jobs()->where('id_project', $project->id)->latest()->first();
+                                @endphp
+                                <div class="col-lg-4 mb-3">
+                                    <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
+                                        @csrf
+                                        <div class="form-group">
+                                            @if($latestJob)
+                                                @if($latestJob->status == 'SUCCESS')
+                                                    <button type="submit" class="btn btn-success w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @elseif($latestJob->status == 'FAILURE')
+                                                    <button type="submit" class="btn btn-danger w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @else
+                                                    <button type="submit" class="btn btn-warning w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <button type="submit" class="btn btn-secondary w-100">
+                                                    ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </div>
+                                @endif
+                                @endforeach
+                                </div>
+                                <div class="row pb-4 pt-5">
+                                    <div class="col-6 align-items-center">
+                                        <h2 class="mb-0">Trigerr Jenkins Stage Update</h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                @foreach($masterjobs as $key => $masterjob)
+                                @if($masterjob->id >= 6 && $masterjob->id <= 7)
+                                @php
+                                    $latestJob = $masterjob->jobs()->where('id_project', $project->id)->latest()->first();
+                                @endphp
+                                <div class="col-lg-4 mb-3">
+                                    <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
+                                        @csrf
+                                        <div class="form-group">
+                                            @if($latestJob)
+                                                @if($latestJob->status == 'SUCCESS')
+                                                    <button type="submit" class="btn btn-success w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @elseif($latestJob->status == 'FAILURE')
+                                                    <button type="submit" class="btn btn-danger w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @else
+                                                    <button type="submit" class="btn btn-warning w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <button type="submit" class="btn btn-secondary w-100">
+                                                    ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </div>
+                                @endif
+                                @endforeach
+                                </div>
+                                <div class="row pb-4 pt-5">
+                                    <div class="col-6 align-items-center">
+                                        <h2 class="mb-0">Trigerr Jenkins Stage Production</h2>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                @foreach($masterjobs as $key => $masterjob)
+                                @if($masterjob->id >= 8 && $masterjob->id <= 11)
+                                @php
+                                    $latestJob = $masterjob->jobs()->where('id_project', $project->id)->latest()->first();
+                                @endphp
+                                <div class="col-lg-4 mb-3">
+                                    <form action="/build/jobs_jenkins/{{ $masterjob->id }}/{{ $project->id }}" method="POST">
+                                        @csrf
+                                        <div class="form-group">
+                                            @if($latestJob)
+                                                @if($latestJob->status == 'SUCCESS')
+                                                    <button type="submit" class="btn btn-success w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @elseif($latestJob->status == 'FAILURE')
+                                                    <button type="submit" class="btn btn-danger w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @else
+                                                    <button type="submit" class="btn btn-warning w-100">
+                                                        ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <button type="submit" class="btn btn-secondary w-100">
+                                                    ({{$masterjob->id}}) Trigger {{ $masterjob->jobs_name }}
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </form>
+                                </div>
+                                @endif
+                                @endforeach
                                 </div>
                                 <div class="row pb-4 pt-5">
                                     <div class="col-6 align-items-center">
@@ -184,6 +266,26 @@
                                             <!-- <td><p class="text-md font-weight-normal mb-0">{{ $jobss->status }}</p></td> -->
                                             <td class="align-middle text-center">
                                                 <div class="d-flex align-items-center">
+                                                    @php
+                                                        $url = $jobss->jenkins->jenkins_url;
+                                                        $parsed_url = parse_url($url);
+
+                                                        // Get the hostname
+                                                        $hostname = $parsed_url['host'];
+
+                                                        // Construct the URL
+                                                        $project_name = $jobss->project->project_name;
+                                                        $build_number = $jobss->build_number;
+                                                        $href_url_dp = "http://{$hostname}:1082/dp/{$project_name}_report_dependency_{$build_number}";
+                                                        $href_url_sast = "http://{$hostname}:9000/dashboard?id={$project_name}";
+                                                    @endphp
+                                                    @if($jobss->id_jobs == '8' && $jobss->status == 'SUCCESS')
+                                                    <a href="{{ $href_url_dp  }}" class="m-1 btn bg-gradient-success"><i class="material-icons text-sm me-2">visibility</i>Vuln Report</a>
+                                                    @elseif($jobss->id_jobs == '9' && $jobss->status == 'SUCCESS')
+                                                    <a href="{{ $href_url_sast  }}" class="m-1 btn bg-gradient-success"><i class="material-icons text-sm me-2">visibility</i>Vuln Report</a>
+                                                    @else
+
+                                                    @endif
                                                     <a href="/get_build_console/{{ $jobss->id }}/{{ $project->id }}" class="m-1 btn bg-gradient-info"><i class="material-icons text-sm me-2">visibility</i>View Logs</a>
                                                     <a class="btn bg-gradient-warning mb-0" href="/project/{{ $project->id }}/show"><i class="material-icons text-sm">refresh</i>&nbsp;&nbsp;Check</a>
                                                 </div>

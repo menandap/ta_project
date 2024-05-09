@@ -27,4 +27,17 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    function render($request, Throwable $exception)
+{
+        if ($this->isHttpException($exception)) {
+            if ($exception->getStatusCode() == 503) {
+                return response()->view('errors.503', [], 503);
+            }
+            if ($exception->getStatusCode() == 504) {
+                return response()->view('errors.504', [], 503);
+            }
+        }
+        return parent::render($request, $exception);
+    }
 }

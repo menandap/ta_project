@@ -18,6 +18,8 @@ use App\Models\Project;
 use App\Models\Server;
 use App\Models\Template;
 use Illuminate\Support\Facades\Artisan;
+use GuzzleHttp\Client;
+
 
 use Auth;
 
@@ -28,6 +30,19 @@ class UserAuthController extends Controller
         $jobStatus = Jobs::where('id_project', $id)->value('status');
         
         return response()->json(['status' => $jobStatus]);
+    }
+
+    public function dp_check($filename){
+        // Check if the file exists in the public directory
+        $filePath = public_path("dp_check/{$filename}.html");
+
+        if (File::exists($filePath)) {
+            // Return the HTML file
+            return response()->file($filePath);
+        } else {
+            // If file not found, return a 404 error or any other appropriate response
+            abort(404);
+        }
     }
 
     public function get_build_jobs($jobs_id, $project_id, $build_id)
