@@ -19,10 +19,9 @@ use App\Models\Server;
 use App\Models\Template;
 use Illuminate\Support\Facades\Artisan;
 use GuzzleHttp\Client;
-
+use Illuminate\Support\Facades\File;
 
 use Auth;
-
 class UserAuthController extends Controller
 {
     // controller
