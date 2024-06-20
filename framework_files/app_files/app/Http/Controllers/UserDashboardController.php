@@ -238,12 +238,16 @@ class UserDashboardController extends Controller
         $jenkins_user_url = $project->jenkins->jenkins_url;
 
         if ($jobs_id == 1){
+            // $callSonarProject = $this->createProjectSonar($project_id);
+            // // // $callSonarProject = $callSonarProject->original;
+            // // // return $callSonarProject;
+            // $callSonarToken = $this->createTokenSonar($project_id);
+            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
+        } elseif($jobs_id == 2){
             $callSonarProject = $this->createProjectSonar($project_id);
             // // $callSonarProject = $callSonarProject->original;
             // // return $callSonarProject;
             $callSonarToken = $this->createTokenSonar($project_id);
-            $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&server_ip={$server_ip}&username={$username}&password={$password}";
-        } elseif($jobs_id == 2){
             $jenkins_url = "{$jenkins_user_url}/job/{$job_name}/buildWithParameters?token={$token}&project_name={$project_name}&project_type={$project_type}&project_repo={$project_repo}&server_ip={$server_ip}&username={$username}&password={$password}";
         } elseif($jobs_id == 3){
             if ($repo_pull == NULL) {
@@ -324,7 +328,7 @@ class UserDashboardController extends Controller
 
         try {
             $response = $client->post('projects/create', [
-                'auth' => ['squ_92dee574ce0cccce68bd081a1e2ebf7e95422c9a', ''],
+                'auth' => ['squ_7a85ced5bffaf07885b27aaf35f0d7cc2dea0e39', ''],
                 'form_params' => [
                     'name' => $project->project_name,
                     'project' => $project->project_name,
@@ -368,7 +372,7 @@ class UserDashboardController extends Controller
 
         try {
             $response = $client->post('user_tokens/generate', [
-                'auth' => ['squ_92dee574ce0cccce68bd081a1e2ebf7e95422c9a', ''],
+                'auth' => ['squ_7a85ced5bffaf07885b27aaf35f0d7cc2dea0e39', ''],
                 'form_params' => [
                     'name' => $project->project_name,
                 ],

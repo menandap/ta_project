@@ -39,6 +39,7 @@
   <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-white" id="sidenav-main">
     @include('layouts.inc.sidebar')
   </aside>
+
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
@@ -51,6 +52,11 @@
         @include('layouts.inc.adminfooter')
       </footer>
     </div>
+    <!-- Include common scripts here -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <!-- Stack for additional scripts -->
+    @stack('scripts')
   </main>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
